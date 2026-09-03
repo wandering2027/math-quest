@@ -8,46 +8,34 @@ captures/
 .externalNativeBuild/
 .cxx/
 
-# ===== 构建产物 =====
+# ===== Build artifacts =====
 *.apk
 *.aab
 *.ap_
 *.dex
 *.class
+*.apk.idsig
 
-# 但保留发布版本APK
-!数学征途-v1.0.apk
+# ===== Build temp =====
+apk-build/
 
-# ===== 系统文件 =====
+# ===== System files =====
 Thumbs.db
-Thumbs.db:encryptable
 ehthumbs.db
-ehthumbs_vista.db
-*.stackdump
 [Dd]esktop.ini
 $RECYCLE.BIN/
-*.cab
-*.msi
-*.msix
-*.msm
-*.msp
-*.lnk
 
 # ===== macOS =====
 .DS_Store
-.AppleDouble
-.LSOverride
-._*
 
-# ===== 编辑器 =====
+# ===== Editor =====
 .vscode/
 *.swp
 *.swo
-*~
 
-# ===== 日志和临时文件 =====
+# ===== Logs and temp =====
 *.log
 *.tmp
 *.temp
 *.bak
-*.old
+icon_ref.png
