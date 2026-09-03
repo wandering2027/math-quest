@@ -1,0 +1,53 @@
+# ===== Android =====
+build/
+.gradle/
+local.properties
+*.iml
+.idea/
+captures/
+.externalNativeBuild/
+.cxx/
+
+# ===== 构建产物 =====
+*.apk
+*.aab
+*.ap_
+*.dex
+*.class
+
+# 但保留发布版本APK
+!数学征途-v1.0.apk
+
+# ===== 系统文件 =====
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+*.stackdump
+[Dd]esktop.ini
+$RECYCLE.BIN/
+*.cab
+*.msi
+*.msix
+*.msm
+*.msp
+*.lnk
+
+# ===== macOS =====
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# ===== 编辑器 =====
+.vscode/
+*.swp
+*.swo
+*~
+
+# ===== 日志和临时文件 =====
+*.log
+*.tmp
+*.temp
+*.bak
+*.old

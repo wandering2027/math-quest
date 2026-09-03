@@ -1,0 +1,2445 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>数学征途 - 从小学到大学的闯关学习</title>
+<link rel="stylesheet" href="https://miaoda.feishu.cn/fonts/css2?family=Noto+Sans+SC:wght@300;400;500;700;900&display=swap">
+<style>
+/* ===== 全局重置与变量 ===== */
+:root {
+  --primary: #1a2744;
+  --primary-light: #2d3f66;
+  --accent: #f59e0b;
+  --accent-light: #fbbf24;
+  --success: #10b981;
+  --danger: #ef4444;
+  --bg: #f8f6f1;
+  --card: #ffffff;
+  --text: #1e293b;
+  --text-secondary: #64748b;
+  --border: #e2e8f0;
+  --shadow: 0 4px 12px rgba(26, 39, 68, 0.08);
+  --shadow-lg: 0 8px 24px rgba(26, 39, 68, 0.12);
+  --radius: 16px;
+  --radius-sm: 10px;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+html, body {
+  height: 100%;
+  font-family: 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  overflow-x: hidden;
+}
+
+body {
+  max-width: 480px;
+  margin: 0 auto;
+  position: relative;
+  min-height: 100vh;
+  background: var(--bg);
+  box-shadow: 0 0 40px rgba(0,0,0,0.05);
+}
+
+/* ===== 视图路由 ===== */
+.view { display: none; min-height: 100vh; padding-bottom: 80px; }
+.view.active { display: block; animation: fadeIn 0.3s ease; }
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pop {
+  0% { transform: scale(0.8); }
+  50% { transform: scale(1.1); }
+  100% { transform: scale(1); }
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-6px); }
+  75% { transform: translateX(6px); }
+}
+
+@keyframes confetti-fall {
+  0% { transform: translateY(-10px) rotate(0deg); opacity: 1; }
+  100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+}
+
+/* ===== 顶部状态栏 ===== */
+.top-bar {
+  background: var(--primary);
+  color: white;
+  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.top-bar .user-info { display: flex; align-items: center; gap: 12px; }
+
+.avatar {
+  width: 44px; height: 44px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--accent), var(--accent-light));
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 900; font-size: 18px; color: var(--primary);
+  border: 2px solid rgba(255,255,255,0.3);
+}
+
+.user-meta .level-badge {
+  font-size: 11px;
+  background: var(--accent);
+  color: var(--primary);
+  padding: 2px 8px;
+  border-radius: 20px;
+  font-weight: 700;
+  display: inline-block;
+  margin-bottom: 2px;
+}
+
+.user-meta .user-name { font-size: 15px; font-weight: 700; }
+
+.stats-row { display: flex; gap: 12px; }
+
+.stat-chip {
+  display: flex; align-items: center; gap: 4px;
+  background: rgba(255,255,255,0.15);
+  padding: 6px 10px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.stat-chip svg { width: 16px; height: 16px; }
+
+/* ===== 经验条 ===== */
+.xp-section {
+  background: var(--primary);
+  padding: 0 20px 16px;
+}
+
+.xp-label {
+  display: flex; justify-content: space-between;
+  font-size: 12px; color: rgba(255,255,255,0.7);
+  margin-bottom: 6px;
+}
+
+.xp-bar {
+  height: 8px;
+  background: rgba(255,255,255,0.15);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.xp-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent), var(--accent-light));
+  border-radius: 4px;
+  transition: width 0.6s ease;
+}
+
+/* ===== 阶段选择器 ===== */
+.stage-tabs {
+  display: flex;
+  overflow-x: auto;
+  gap: 8px;
+  padding: 16px 16px 8px;
+  scrollbar-width: none;
+}
+.stage-tabs::-webkit-scrollbar { display: none; }
+
+.stage-tab {
+  flex-shrink: 0;
+  padding: 8px 16px;
+  border-radius: 20px;
+  background: var(--card);
+  border: 2px solid var(--border);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.stage-tab.active {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: white;
+}
+
+.stage-tab.locked {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ===== 学习路径 ===== */
+.learning-path {
+  padding: 16px;
+  position: relative;
+}
+
+.path-line {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background: linear-gradient(to bottom, var(--accent-light), var(--border));
+  transform: translateX(-50%);
+  border-radius: 2px;
+}
+
+.level-node {
+  position: relative;
+  display: flex;
+  align-items: center;
+  margin-bottom: 24px;
+  min-height: 72px;
+}
+
+.level-node:nth-child(odd) { flex-direction: row; }
+.level-node:nth-child(even) { flex-direction: row-reverse; }
+
+.node-circle {
+  width: 64px; height: 64px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 24px;
+  font-weight: 900;
+  position: relative;
+  z-index: 2;
+  flex-shrink: 0;
+  transition: transform 0.2s;
+  cursor: pointer;
+}
+
+.node-circle:active { transform: scale(0.95); }
+
+.node-circle.completed {
+  background: linear-gradient(135deg, var(--success), #059669);
+  color: white;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+}
+
+.node-circle.current {
+  background: linear-gradient(135deg, var(--accent), var(--accent-light));
+  color: var(--primary);
+  box-shadow: 0 4px 16px rgba(245, 158, 11, 0.5);
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { box-shadow: 0 4px 16px rgba(245, 158, 11, 0.5); }
+  50% { box-shadow: 0 4px 24px rgba(245, 158, 11, 0.8); }
+}
+
+.node-circle.locked {
+  background: var(--border);
+  color: var(--text-secondary);
+  cursor: not-allowed;
+}
+
+.node-stars {
+  position: absolute;
+  bottom: -6px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 1px;
+  background: var(--card);
+  padding: 1px 4px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.node-stars svg { width: 10px; height: 10px; }
+
+.node-info {
+  flex: 1;
+  padding: 0 16px;
+}
+
+.level-node:nth-child(odd) .node-info { text-align: right; }
+.level-node:nth-child(even) .node-info { text-align: left; }
+
+.node-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 2px;
+}
+
+.node-desc {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.node-lock-icon {
+  position: absolute;
+  top: -4px; right: -4px;
+  width: 22px; height: 22px;
+  background: var(--card);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+}
+
+.node-lock-icon svg { width: 12px; height: 12px; color: var(--text-secondary); }
+
+/* ===== 底部导航 ===== */
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: 480px;
+  background: var(--card);
+  border-top: 1px solid var(--border);
+  display: flex;
+  justify-content: space-around;
+  padding: 8px 0 calc(8px + env(safe-area-inset-bottom));
+  z-index: 100;
+}
+
+.nav-item {
+  display: flex; flex-direction: column; align-items: center;
+  gap: 2px;
+  padding: 6px 16px;
+  cursor: pointer;
+  color: var(--text-secondary);
+  transition: color 0.2s;
+  border: none;
+  background: none;
+  font-family: inherit;
+}
+
+.nav-item.active { color: var(--accent); }
+.nav-item svg { width: 24px; height: 24px; }
+.nav-item span { font-size: 11px; font-weight: 600; }
+
+/* ===== 关卡详情页 ===== */
+.lesson-header {
+  background: var(--primary);
+  color: white;
+  padding: 20px;
+  position: relative;
+}
+
+.back-btn {
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.15);
+  border: none;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  margin-bottom: 16px;
+  color: white;
+}
+
+.lesson-title { font-size: 22px; font-weight: 900; margin-bottom: 4px; }
+.lesson-subtitle { font-size: 14px; opacity: 0.8; }
+
+.lesson-content { padding: 20px; }
+
+.knowledge-card {
+  background: var(--card);
+  border-radius: var(--radius);
+  padding: 20px;
+  margin-bottom: 16px;
+  box-shadow: var(--shadow);
+}
+
+.knowledge-card h3 {
+  font-size: 16px;
+  font-weight: 700;
+  margin-bottom: 12px;
+  color: var(--primary);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.knowledge-card h3::before {
+  content: '';
+  width: 4px; height: 18px;
+  background: var(--accent);
+  border-radius: 2px;
+}
+
+.knowledge-card p {
+  font-size: 14px;
+  line-height: 1.8;
+  color: var(--text);
+  margin-bottom: 8px;
+}
+
+.knowledge-card .formula {
+  background: var(--bg);
+  padding: 12px 16px;
+  border-radius: var(--radius-sm);
+  font-family: 'Times New Roman', serif;
+  font-size: 16px;
+  text-align: center;
+  margin: 12px 0;
+  border-left: 3px solid var(--accent);
+}
+
+.knowledge-card .example {
+  background: #f0fdf4;
+  padding: 12px 16px;
+  border-radius: var(--radius-sm);
+  margin: 12px 0;
+  border-left: 3px solid var(--success);
+}
+
+.knowledge-card .example-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--success);
+  margin-bottom: 6px;
+}
+
+.start-quiz-btn {
+  width: 100%;
+  padding: 16px;
+  background: linear-gradient(135deg, var(--accent), var(--accent-light));
+  color: var(--primary);
+  border: none;
+  border-radius: var(--radius);
+  font-size: 16px;
+  font-weight: 900;
+  cursor: pointer;
+  margin-top: 8px;
+  transition: transform 0.15s, box-shadow 0.15s;
+  box-shadow: 0 4px 16px rgba(245, 158, 11, 0.4);
+}
+
+.start-quiz-btn:active { transform: scale(0.98); }
+
+/* ===== 答题页 ===== */
+.quiz-container {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg);
+}
+
+.quiz-header {
+  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.quiz-progress {
+  flex: 1;
+  height: 10px;
+  background: var(--border);
+  border-radius: 5px;
+  overflow: hidden;
+}
+
+.quiz-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--success), #34d399);
+  border-radius: 5px;
+  transition: width 0.4s ease;
+}
+
+.quiz-hearts { display: flex; gap: 4px; }
+.quiz-hearts svg { width: 20px; height: 20px; color: var(--danger); }
+.quiz-hearts svg.lost { color: var(--border); }
+
+.quit-btn {
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  background: var(--card);
+  border: none;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  color: var(--text-secondary);
+  box-shadow: var(--shadow);
+}
+
+.quiz-body {
+  flex: 1;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+}
+
+.question-number {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--accent);
+  margin-bottom: 8px;
+}
+
+.question-text {
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1.6;
+  margin-bottom: 24px;
+  color: var(--text);
+}
+
+.question-text .formula-inline {
+  font-family: 'Times New Roman', serif;
+  background: var(--bg);
+  padding: 2px 8px;
+  border-radius: 6px;
+}
+
+.options-list { display: flex; flex-direction: column; gap: 12px; }
+
+.option-btn {
+  width: 100%;
+  padding: 16px 20px;
+  background: var(--card);
+  border: 2px solid var(--border);
+  border-radius: var(--radius);
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text);
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.2s;
+  font-family: inherit;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.option-btn .option-letter {
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  background: var(--bg);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-secondary);
+  flex-shrink: 0;
+}
+
+.option-btn:active { transform: scale(0.98); }
+
+.option-btn.selected {
+  border-color: var(--primary);
+  background: #f0f4ff;
+}
+
+.option-btn.selected .option-letter {
+  background: var(--primary);
+  color: white;
+}
+
+.option-btn.correct {
+  border-color: var(--success);
+  background: #f0fdf4;
+  animation: pop 0.3s ease;
+}
+
+.option-btn.correct .option-letter {
+  background: var(--success);
+  color: white;
+}
+
+.option-btn.wrong {
+  border-color: var(--danger);
+  background: #fef2f2;
+  animation: shake 0.4s ease;
+}
+
+.option-btn.wrong .option-letter {
+  background: var(--danger);
+  color: white;
+}
+
+.option-btn:disabled { cursor: default; }
+
+.fill-input {
+  width: 100%;
+  padding: 16px 20px;
+  border: 2px solid var(--border);
+  border-radius: var(--radius);
+  font-size: 16px;
+  font-family: inherit;
+  outline: none;
+  transition: border-color 0.2s;
+  background: var(--card);
+}
+
+.fill-input:focus { border-color: var(--primary); }
+
+.quiz-footer {
+  padding: 16px 20px calc(16px + env(safe-area-inset-bottom));
+  background: var(--card);
+  border-top: 1px solid var(--border);
+}
+
+.submit-btn {
+  width: 100%;
+  padding: 16px;
+  background: var(--primary);
+  color: white;
+  border: none;
+  border-radius: var(--radius);
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: opacity 0.2s, transform 0.15s;
+  font-family: inherit;
+}
+
+.submit-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.submit-btn:active:not(:disabled) { transform: scale(0.98); }
+
+.submit-btn.correct-mode { background: var(--success); }
+.submit-btn.wrong-mode { background: var(--danger); }
+
+.feedback-banner {
+  padding: 16px 20px;
+  margin: 0 20px 16px;
+  border-radius: var(--radius);
+  animation: slideUp 0.3s ease;
+}
+
+.feedback-banner.correct {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.feedback-banner.wrong {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.feedback-banner .feedback-title {
+  font-size: 16px;
+  font-weight: 900;
+  margin-bottom: 4px;
+}
+
+.feedback-banner .feedback-detail {
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+/* ===== 结算页 ===== */
+.result-container {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 24px;
+  text-align: center;
+  background: var(--bg);
+  position: relative;
+  overflow: hidden;
+}
+
+.confetti {
+  position: absolute;
+  width: 10px; height: 10px;
+  top: -10px;
+  animation: confetti-fall 3s linear forwards;
+}
+
+.result-icon {
+  width: 100px; height: 100px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  margin-bottom: 24px;
+  animation: pop 0.5s ease;
+}
+
+.result-icon.pass {
+  background: linear-gradient(135deg, var(--success), #059669);
+  box-shadow: 0 8px 32px rgba(16, 185, 129, 0.4);
+}
+
+.result-icon.fail {
+  background: linear-gradient(135deg, var(--danger), #dc2626);
+  box-shadow: 0 8px 32px rgba(239, 68, 68, 0.4);
+}
+
+.result-icon svg { width: 56px; height: 56px; color: white; }
+
+.result-title {
+  font-size: 28px;
+  font-weight: 900;
+  margin-bottom: 8px;
+  color: var(--text);
+}
+
+.result-subtitle {
+  font-size: 15px;
+  color: var(--text-secondary);
+  margin-bottom: 32px;
+}
+
+.result-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  width: 100%;
+  max-width: 320px;
+  margin-bottom: 32px;
+}
+
+.result-stat {
+  background: var(--card);
+  border-radius: var(--radius);
+  padding: 16px;
+  box-shadow: var(--shadow);
+}
+
+.result-stat .stat-value {
+  font-size: 24px;
+  font-weight: 900;
+  color: var(--primary);
+}
+
+.result-stat .stat-label {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-top: 4px;
+}
+
+.result-stars {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 24px;
+}
+
+.result-stars svg {
+  width: 40px; height: 40px;
+  color: var(--border);
+  transition: color 0.3s;
+}
+
+.result-stars svg.earned { color: var(--accent); }
+
+.result-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+  max-width: 320px;
+}
+
+.btn-primary {
+  width: 100%;
+  padding: 16px;
+  background: var(--primary);
+  color: white;
+  border: none;
+  border-radius: var(--radius);
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: inherit;
+  transition: transform 0.15s;
+}
+
+.btn-primary:active { transform: scale(0.98); }
+
+.btn-secondary {
+  width: 100%;
+  padding: 16px;
+  background: var(--card);
+  color: var(--text);
+  border: 2px solid var(--border);
+  border-radius: var(--radius);
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: inherit;
+  transition: transform 0.15s;
+}
+
+.btn-secondary:active { transform: scale(0.98); }
+
+/* ===== 打卡页 ===== */
+.checkin-header {
+  background: linear-gradient(135deg, var(--primary), var(--primary-light));
+  color: white;
+  padding: 32px 20px;
+  text-align: center;
+}
+
+.checkin-title { font-size: 24px; font-weight: 900; margin-bottom: 8px; }
+
+.checkin-streak {
+  font-size: 48px;
+  font-weight: 900;
+  color: var(--accent);
+  line-height: 1;
+  margin: 16px 0;
+}
+
+.checkin-streak-label { font-size: 14px; opacity: 0.8; }
+
+.checkin-calendar {
+  padding: 20px;
+  margin-top: -20px;
+}
+
+.calendar-card {
+  background: var(--card);
+  border-radius: var(--radius);
+  padding: 20px;
+  box-shadow: var(--shadow-lg);
+}
+
+.calendar-month {
+  font-size: 16px;
+  font-weight: 700;
+  text-align: center;
+  margin-bottom: 16px;
+  color: var(--primary);
+}
+
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 6px;
+  margin-bottom: 16px;
+}
+
+.calendar-day-header {
+  text-align: center;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-secondary);
+  padding: 4px 0;
+}
+
+.calendar-day {
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.calendar-day.checked {
+  background: var(--success);
+  color: white;
+}
+
+.calendar-day.today {
+  border: 2px solid var(--accent);
+  font-weight: 900;
+}
+
+.calendar-day.future { color: var(--border); }
+.calendar-day.empty { visibility: hidden; }
+
+.checkin-btn {
+  width: 100%;
+  padding: 16px;
+  background: linear-gradient(135deg, var(--accent), var(--accent-light));
+  color: var(--primary);
+  border: none;
+  border-radius: var(--radius);
+  font-size: 16px;
+  font-weight: 900;
+  cursor: pointer;
+  transition: transform 0.15s, opacity 0.2s;
+  box-shadow: 0 4px 16px rgba(245, 158, 11, 0.4);
+  font-family: inherit;
+}
+
+.checkin-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.checkin-btn:active:not(:disabled) { transform: scale(0.98); }
+
+.weekly-goal {
+  margin-top: 20px;
+  padding: 16px;
+  background: var(--bg);
+  border-radius: var(--radius-sm);
+}
+
+.weekly-goal-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+  display: flex;
+  justify-content: space-between;
+}
+
+.weekly-goal-bar {
+  height: 8px;
+  background: var(--border);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.weekly-goal-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent), var(--accent-light));
+  border-radius: 4px;
+  transition: width 0.6s ease;
+}
+
+/* ===== 个人中心 ===== */
+.profile-header {
+  background: var(--primary);
+  color: white;
+  padding: 32px 20px;
+  text-align: center;
+}
+
+.profile-avatar {
+  width: 80px; height: 80px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--accent), var(--accent-light));
+  display: flex; align-items: center; justify-content: center;
+  font-size: 32px;
+  font-weight: 900;
+  color: var(--primary);
+  margin: 0 auto 16px;
+  border: 3px solid rgba(255,255,255,0.3);
+}
+
+.profile-name { font-size: 22px; font-weight: 900; margin-bottom: 4px; }
+
+.profile-level {
+  display: inline-block;
+  background: var(--accent);
+  color: var(--primary);
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.profile-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  padding: 20px;
+  margin-top: -20px;
+}
+
+.profile-stat-card {
+  background: var(--card);
+  border-radius: var(--radius);
+  padding: 16px 8px;
+  text-align: center;
+  box-shadow: var(--shadow);
+}
+
+.profile-stat-card .value {
+  font-size: 22px;
+  font-weight: 900;
+  color: var(--primary);
+}
+
+.profile-stat-card .label {
+  font-size: 11px;
+  color: var(--text-secondary);
+  margin-top: 4px;
+}
+
+.profile-section {
+  padding: 0 20px 20px;
+}
+
+.section-title {
+  font-size: 16px;
+  font-weight: 700;
+  margin-bottom: 12px;
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.achievements-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+
+.achievement-item {
+  text-align: center;
+}
+
+.achievement-icon {
+  width: 56px; height: 56px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  margin: 0 auto 6px;
+  font-size: 24px;
+}
+
+.achievement-item.unlocked .achievement-icon {
+  background: linear-gradient(135deg, var(--accent), var(--accent-light));
+  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+}
+
+.achievement-item.locked .achievement-icon {
+  background: var(--border);
+  opacity: 0.5;
+}
+
+.achievement-name {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text);
+  line-height: 1.3;
+}
+
+.achievement-item.locked .achievement-name { color: var(--text-secondary); }
+
+.progress-overview {
+  background: var(--card);
+  border-radius: var(--radius);
+  padding: 20px;
+  box-shadow: var(--shadow);
+}
+
+.stage-progress-item {
+  margin-bottom: 16px;
+}
+
+.stage-progress-item:last-child { margin-bottom: 0; }
+
+.stage-progress-header {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+.stage-progress-header .stage-name { color: var(--text); }
+.stage-progress-header .stage-count { color: var(--text-secondary); }
+
+.stage-progress-bar {
+  height: 8px;
+  background: var(--bg);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.stage-progress-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.6s ease;
+}
+
+.reset-btn {
+  width: 100%;
+  padding: 14px;
+  background: transparent;
+  color: var(--danger);
+  border: 2px solid var(--danger);
+  border-radius: var(--radius);
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  margin-top: 16px;
+  font-family: inherit;
+  transition: background 0.2s;
+}
+
+.reset-btn:active { background: rgba(239, 68, 68, 0.1); }
+
+/* ===== Toast ===== */
+.toast {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%) translateY(-100px);
+  background: var(--primary);
+  color: white;
+  padding: 12px 24px;
+  border-radius: 24px;
+  font-size: 14px;
+  font-weight: 600;
+  z-index: 1000;
+  transition: transform 0.3s ease;
+  box-shadow: var(--shadow-lg);
+  max-width: 90%;
+  text-align: center;
+}
+
+.toast.show { transform: translateX(-50%) translateY(0); }
+
+/* ===== 空状态 ===== */
+.empty-state {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--text-secondary);
+}
+
+.empty-state svg {
+  width: 64px; height: 64px;
+  margin-bottom: 16px;
+  opacity: 0.5;
+}
+
+/* ===== 响应式 ===== */
+@media (min-width: 481px) {
+  body {
+    border-left: 1px solid var(--border);
+    border-right: 1px solid var(--border);
+  }
+}
+</style>
+</head>
+<body>
+
+<!-- ===== 视图：首页学习路径 ===== -->
+<div id="view-home" class="view active">
+  <div class="top-bar">
+    <div class="user-info">
+      <div class="avatar" id="avatar">数</div>
+      <div class="user-meta">
+        <div class="level-badge" id="level-badge">Lv.1 数学新手</div>
+        <div class="user-name">数学探索者</div>
+      </div>
+    </div>
+    <div class="stats-row">
+      <div class="stat-chip" id="xp-chip">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/></svg>
+        <span id="xp-text">0</span>
+      </div>
+      <div class="stat-chip" id="streak-chip">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M13.5.67s.74 2.65.74 4.8c0 2.06-1.35 3.73-3.41 3.73-2.07 0-3.63-1.67-3.63-3.73l.03-.36C5.21 7.51 4 10.62 4 14c0 4.42 3.58 8 8 8s8-3.58 8-8C20 8.61 17.41 3.8 13.5.67zM11.71 19c-1.78 0-3.22-1.4-3.22-3.14 0-1.62 1.05-2.76 2.81-3.12 1.77-.36 3.6-1.21 4.62-2.58.39 1.29.59 2.65.59 4.04 0 2.65-2.15 4.8-4.8 4.8z"/></svg>
+        <span id="streak-text">0</span>
+      </div>
+    </div>
+  </div>
+  <div class="xp-section">
+    <div class="xp-label">
+      <span id="xp-current-label">0 XP</span>
+      <span id="xp-next-label">下一级 100 XP</span>
+    </div>
+    <div class="xp-bar">
+      <div class="xp-fill" id="xp-fill" style="width: 0%"></div>
+    </div>
+  </div>
+  <div class="stage-tabs" id="stage-tabs"></div>
+  <div class="learning-path" id="learning-path"></div>
+</div>
+
+<!-- ===== 视图：关卡详情 ===== -->
+<div id="view-lesson" class="view">
+  <div class="lesson-header">
+    <button class="back-btn" onclick="navigate('home')">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+    </button>
+    <div class="lesson-title" id="lesson-title">关卡标题</div>
+    <div class="lesson-subtitle" id="lesson-subtitle">阶段 · 关卡</div>
+  </div>
+  <div class="lesson-content" id="lesson-content"></div>
+</div>
+
+<!-- ===== 视图：答题 ===== -->
+<div id="view-quiz" class="view">
+  <div class="quiz-container">
+    <div class="quiz-header">
+      <button class="quit-btn" onclick="quitQuiz()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+      </button>
+      <div class="quiz-progress">
+        <div class="quiz-progress-fill" id="quiz-progress-fill" style="width: 0%"></div>
+      </div>
+      <div class="quiz-hearts" id="quiz-hearts"></div>
+    </div>
+    <div class="quiz-body" id="quiz-body"></div>
+    <div class="quiz-footer" id="quiz-footer"></div>
+  </div>
+</div>
+
+<!-- ===== 视图：结算 ===== -->
+<div id="view-result" class="view">
+  <div class="result-container" id="result-container"></div>
+</div>
+
+<!-- ===== 视图：打卡 ===== -->
+<div id="view-checkin" class="view">
+  <div class="checkin-header">
+    <div class="checkin-title">每日打卡</div>
+    <div class="checkin-streak" id="checkin-streak-num">0</div>
+    <div class="checkin-streak-label">连续打卡天数</div>
+  </div>
+  <div class="checkin-calendar">
+    <div class="calendar-card">
+      <div class="calendar-month" id="calendar-month"></div>
+      <div class="calendar-grid" id="calendar-grid"></div>
+      <button class="checkin-btn" id="checkin-btn" onclick="doCheckin()">今日打卡</button>
+      <div class="weekly-goal">
+        <div class="weekly-goal-title">
+          <span>本周目标</span>
+          <span id="weekly-count">0/7</span>
+        </div>
+        <div class="weekly-goal-bar">
+          <div class="weekly-goal-fill" id="weekly-goal-fill" style="width: 0%"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 视图：个人中心 ===== -->
+<div id="view-profile" class="view">
+  <div class="profile-header">
+    <div class="profile-avatar">数</div>
+    <div class="profile-name">数学探索者</div>
+    <div class="profile-level" id="profile-level">Lv.1 数学新手</div>
+  </div>
+  <div class="profile-stats">
+    <div class="profile-stat-card">
+      <div class="value" id="profile-xp">0</div>
+      <div class="label">总经验值</div>
+    </div>
+    <div class="profile-stat-card">
+      <div class="value" id="profile-lessons">0</div>
+      <div class="label">已通关卡</div>
+    </div>
+    <div class="profile-stat-card">
+      <div class="value" id="profile-accuracy">0%</div>
+      <div class="label">正确率</div>
+    </div>
+  </div>
+  <div class="profile-section">
+    <div class="section-title">学习进度</div>
+    <div class="progress-overview" id="progress-overview"></div>
+  </div>
+  <div class="profile-section">
+    <div class="section-title">成就徽章</div>
+    <div class="achievements-grid" id="achievements-grid"></div>
+  </div>
+  <div class="profile-section">
+    <button class="reset-btn" onclick="resetProgress()">重置学习进度</button>
+  </div>
+</div>
+
+<!-- ===== 底部导航 ===== -->
+<nav class="bottom-nav">
+  <button class="nav-item active" data-view="home" onclick="navigate('home')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+    <span>学习</span>
+  </button>
+  <button class="nav-item" data-view="checkin" onclick="navigate('checkin')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+    <span>打卡</span>
+  </button>
+  <button class="nav-item" data-view="profile" onclick="navigate('profile')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+    <span>我的</span>
+  </button>
+</nav>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ============================================================
+// 数学知识体系数据（小学 → 初中 → 高中 → 大学）
+// ============================================================
+const CURRICULUM = {
+  elementary: {
+    name: '小学',
+    icon: '∑',
+    color: '#10b981',
+    levels: [
+      {
+        id: 'e1-1', title: '认识数字', desc: '1-10的认识与书写',
+        knowledge: [
+          { title: '数字的意义', content: '数字是用来表示数量的符号。我们生活中处处都有数字：苹果的个数、书本的页数、钟表的时间。', formula: '1, 2, 3, 4, 5, 6, 7, 8, 9, 10' },
+          { title: '数的顺序', content: '数字按照从小到大的顺序排列。每个数字都比前一个多1，比后一个少1。', example: { title: '举例', content: '5的前面是4，后面是6。比7大1的数是8，比7小1的数是6。' } }
+        ],
+        questions: [
+          { type: 'choice', q: '3的后面是哪个数字？', options: ['2', '4', '5', '6'], answer: 1 },
+          { type: 'choice', q: '比5大1的数是？', options: ['4', '5', '6', '7'], answer: 2 },
+          { type: 'choice', q: '8的前面是哪个数字？', options: ['7', '8', '9', '10'], answer: 0 },
+          { type: 'fill', q: '从1数到10，第5个数是____', answer: '5' },
+          { type: 'choice', q: '比9小1的数是？', options: ['7', '8', '9', '10'], answer: 1 }
+        ]
+      },
+      {
+        id: 'e1-2', title: '10以内加法', desc: '不进位加法入门',
+        knowledge: [
+          { title: '加法的含义', content: '加法是把两个数合并成一个数的运算。加号"+"表示合并，等号"="表示结果。', formula: '加数 + 加数 = 和' },
+          { title: '凑十法', content: '计算加法时，可以先把一个数凑成10，再加剩下的数。', example: { title: '举例', content: '计算 8 + 5：把5分成2和3，8+2=10，10+3=13。所以 8+5=13。' } }
+        ],
+        questions: [
+          { type: 'choice', q: '3 + 4 = ?', options: ['6', '7', '8', '9'], answer: 1 },
+          { type: 'choice', q: '5 + 5 = ?', options: ['8', '9', '10', '11'], answer: 2 },
+          { type: 'fill', q: '2 + 6 = ____', answer: '8' },
+          { type: 'choice', q: '7 + 2 = ?', options: ['8', '9', '10', '11'], answer: 1 },
+          { type: 'fill', q: '4 + 4 = ____', answer: '8' }
+        ]
+      },
+      {
+        id: 'e1-3', title: '10以内减法', desc: '基础减法运算',
+        knowledge: [
+          { title: '减法的含义', content: '减法是从一个数中去掉一部分，求剩下多少的运算。减号"-"表示去掉。', formula: '被减数 - 减数 = 差' },
+          { title: '加减法的关系', content: '减法是加法的逆运算。知道两个数的和与其中一个加数，可以用减法求出另一个加数。', example: { title: '举例', content: '因为 5 + 3 = 8，所以 8 - 3 = 5，8 - 5 = 3。' } }
+        ],
+        questions: [
+          { type: 'choice', q: '9 - 4 = ?', options: ['4', '5', '6', '7'], answer: 1 },
+          { type: 'choice', q: '10 - 7 = ?', options: ['2', '3', '4', '5'], answer: 1 },
+          { type: 'fill', q: '8 - 3 = ____', answer: '5' },
+          { type: 'choice', q: '6 - 6 = ?', options: ['0', '1', '6', '12'], answer: 0 },
+          { type: 'fill', q: '7 - 2 = ____', answer: '5' }
+        ]
+      },
+      {
+        id: 'e2-1', title: '表内乘法', desc: '乘法口诀入门',
+        knowledge: [
+          { title: '乘法的意义', content: '乘法是求几个相同加数和的简便运算。乘号"×"表示几个几相加。', formula: '3 × 4 = 3 + 3 + 3 + 3 = 12' },
+          { title: '乘法口诀', content: '乘法口诀是中国古代筹算中的基本计算规则，熟记口诀可以快速计算表内乘法。', example: { title: '举例', content: '三七二十一：3 × 7 = 21，7 × 3 = 21。' } }
+        ],
+        questions: [
+          { type: 'choice', q: '3 × 4 = ?', options: ['7', '12', '15', '16'], answer: 1 },
+          { type: 'choice', q: '6 × 7 = ?', options: ['36', '42', '48', '49'], answer: 1 },
+          { type: 'fill', q: '5 × 8 = ____', answer: '40' },
+          { type: 'choice', q: '9 × 9 = ?', options: ['72', '81', '90', '99'], answer: 1 },
+          { type: 'fill', q: '4 × 7 = ____', answer: '28' }
+        ]
+      },
+      {
+        id: 'e2-2', title: '表内除法', desc: '平均分与除法',
+        knowledge: [
+          { title: '除法的意义', content: '除法是把一个数平均分成几份，求每份是多少的运算。除号"÷"表示平均分。', formula: '被除数 ÷ 除数 = 商' },
+          { title: '乘除法的关系', content: '除法是乘法的逆运算。根据乘法口诀可以快速求出商。', example: { title: '举例', content: '因为 4 × 6 = 24，所以 24 ÷ 4 = 6，24 ÷ 6 = 4。' } }
+        ],
+        questions: [
+          { type: 'choice', q: '24 ÷ 6 = ?', options: ['3', '4', '5', '6'], answer: 1 },
+          { type: 'choice', q: '56 ÷ 8 = ?', options: ['6', '7', '8', '9'], answer: 1 },
+          { type: 'fill', q: '45 ÷ 9 = ____', answer: '5' },
+          { type: 'choice', q: '36 ÷ 4 = ?', options: ['7', '8', '9', '10'], answer: 2 },
+          { type: 'fill', q: '72 ÷ 8 = ____', answer: '9' }
+        ]
+      },
+      {
+        id: 'e3-1', title: '分数初步认识', desc: '认识几分之一',
+        knowledge: [
+          { title: '分数的产生', content: '在进行测量和计算时，往往不能正好得到整数的结果，这时常用分数来表示。', formula: '分子 / 分母（分母表示平均分的份数，分子表示取的份数）' },
+          { title: '分数的读写', content: '读分数时先读分母，再读"分之"，最后读分子。写分数时先写分数线，再写分母，最后写分子。', example: { title: '举例', content: '1/2 读作"二分之一"，表示把一个整体平均分成2份，取其中的1份。' } }
+        ],
+        questions: [
+          { type: 'choice', q: '把一个蛋糕平均分成4份，每份是这个蛋糕的？', options: ['1/2', '1/3', '1/4', '1/5'], answer: 2 },
+          { type: 'choice', q: '3/5 读作？', options: ['五分之三', '三分之五', '五分三', '三分五'], answer: 0 },
+          { type: 'fill', q: '七分之一写作____', answer: '1/7' },
+          { type: 'choice', q: '1/2 和 1/3 哪个大？', options: ['1/2 大', '1/3 大', '一样大', '无法比较'], answer: 0 },
+          { type: 'fill', q: '把1米平均分成10份，每份是____米（填分数）', answer: '1/10' }
+        ]
+      },
+      {
+        id: 'e4-1', title: '运算定律', desc: '加法乘法运算律',
+        knowledge: [
+          { title: '加法交换律和结合律', content: '加法交换律：两个数相加，交换加数的位置，和不变。加法结合律：三个数相加，先把前两个数相加，或者先把后两个数相加，和不变。', formula: 'a + b = b + a；(a + b) + c = a + (b + c)' },
+          { title: '乘法交换律、结合律和分配律', content: '乘法分配律：两个数的和与一个数相乘，可以先把它们分别与这个数相乘，再相加。', formula: '(a + b) × c = a × c + b × c', example: { title: '举例', content: '25 × 44 = 25 × (40 + 4) = 25 × 40 + 25 × 4 = 1000 + 100 = 1100' } }
+        ],
+        questions: [
+          { type: 'choice', q: '25 × 4 × 8 = ?（用简便方法）', options: ['600', '700', '800', '900'], answer: 2 },
+          { type: 'choice', q: '101 × 56 = ?（用乘法分配律）', options: ['5556', '5656', '5756', '5600'], answer: 1 },
+          { type: 'fill', q: '125 × 8 × 7 = ____', answer: '7000' },
+          { type: 'choice', q: 'a + b = b + a 是什么运算定律？', options: ['加法结合律', '加法交换律', '乘法交换律', '乘法分配律'], answer: 1 },
+          { type: 'fill', q: '99 × 38 + 38 = ____', answer: '3800' }
+        ]
+      },
+      {
+        id: 'e5-1', title: '简易方程', desc: '用字母表示数',
+        knowledge: [
+          { title: '用字母表示数', content: '用字母可以表示数、数量关系、运算定律和计算公式。字母与数字相乘时，乘号可以省略，数字写在字母前面。', formula: 'a × b = ab；a × 4 = 4a' },
+          { title: '方程的意义', content: '含有未知数的等式叫做方程。使方程左右两边相等的未知数的值叫做方程的解。求方程的解的过程叫做解方程。', example: { title: '举例', content: '解方程：x + 5 = 12。两边同时减去5：x = 12 - 5 = 7。检验：7 + 5 = 12，正确。' } }
+        ],
+        questions: [
+          { type: 'choice', q: '下列哪个是方程？', options: ['3 + 5 = 8', 'x + 5', 'x + 5 = 12', '3x > 6'], answer: 2 },
+          { type: 'choice', q: 'x + 8 = 15，x = ?', options: ['5', '6', '7', '8'], answer: 2 },
+          { type: 'fill', q: '3x = 24，x = ____', answer: '8' },
+          { type: 'choice', q: '2x + 3 = 11，x = ?', options: ['3', '4', '5', '6'], answer: 1 },
+          { type: 'fill', q: 'x - 6 = 9，x = ____', answer: '15' }
+        ]
+      },
+      {
+        id: 'e6-1', title: '百分数', desc: '百分比的意义与应用',
+        knowledge: [
+          { title: '百分数的意义', content: '表示一个数是另一个数的百分之几的数叫做百分数，也叫百分率或百分比。百分数通常不写成分数形式，而用百分号"%"表示。', formula: '百分数 = 部分量 ÷ 总量 × 100%' },
+          { title: '百分数与小数、分数的互化', content: '小数化百分数：小数点向右移动两位，添上%。百分数化小数：去掉%，小数点向左移动两位。', example: { title: '举例', content: '0.75 = 75%；3/4 = 0.75 = 75%；一件衣服打八折，就是按原价的80%出售。' } }
+        ],
+        questions: [
+          { type: 'choice', q: '0.6 化成百分数是？', options: ['6%', '60%', '0.6%', '600%'], answer: 1 },
+          { type: 'choice', q: '一件商品原价200元，打七五折后售价是？', options: ['150元', '160元', '170元', '180元'], answer: 0 },
+          { type: 'fill', q: '1/4 化成百分数是____%', answer: '25' },
+          { type: 'choice', q: '全班50人，出勤48人，出勤率是？', options: ['92%', '94%', '96%', '98%'], answer: 2 },
+          { type: 'fill', q: '80% 化成小数是____', answer: '0.8' }
+        ]
+      }
+    ]
+  },
+  middle: {
+    name: '初中',
+    icon: '√',
+    color: '#3b82f6',
+    levels: [
+      {
+        id: 'm1-1', title: '有理数', desc: '正数负数与有理数',
+        knowledge: [
+          { title: '正数与负数', content: '大于0的数叫做正数，在正数前面加上负号"-"的数叫做负数。0既不是正数也不是负数。正负数可以表示具有相反意义的量。', formula: '正数 > 0 > 负数' },
+          { title: '有理数的分类', content: '整数和分数统称为有理数。整数包括正整数、0、负整数；分数包括正分数和负分数。', example: { title: '举例', content: '有理数：-3, -1/2, 0, 2/3, 5。无理数（不是有理数）：π, √2。' } }
+        ],
+        questions: [
+          { type: 'choice', q: '下列哪个是负数？', options: ['0', '-5', '3', '1/2'], answer: 1 },
+          { type: 'choice', q: '-3 的相反数是？', options: ['-3', '0', '3', '1/3'], answer: 2 },
+          { type: 'fill', q: '|-5| = ____', answer: '5' },
+          { type: 'choice', q: '下列各数中，最小的是？', options: ['-3', '-1', '0', '2'], answer: 0 },
+          { type: 'fill', q: '-2 的倒数是____', answer: '-1/2' }
+        ]
+      },
+      {
+        id: 'm1-2', title: '一元一次方程', desc: '方程的解法与应用',
+        knowledge: [
+          { title: '一元一次方程', content: '只含有一个未知数，未知数的次数都是1，等号两边都是整式的方程叫做一元一次方程。', formula: 'ax + b = 0 (a ≠ 0)' },
+          { title: '解一元一次方程的步骤', content: '去分母 → 去括号 → 移项 → 合并同类项 → 系数化为1。移项要变号。', example: { title: '举例', content: '解方程：3(x - 2) = x + 4。去括号：3x - 6 = x + 4。移项：3x - x = 4 + 6。合并：2x = 10。系数化1：x = 5。' } }
+        ],
+        questions: [
+          { type: 'choice', q: '2x + 6 = 14，x = ?', options: ['3', '4', '5', '6'], answer: 1 },
+          { type: 'choice', q: '3(x - 1) = 6，x = ?', options: ['2', '3', '4', '5'], answer: 1 },
+          { type: 'fill', q: '5x - 3 = 2x + 9，x = ____', answer: '4' },
+          { type: 'choice', q: 'x/2 + 3 = 7，x = ?', options: ['6', '8', '10', '12'], answer: 1 },
+          { type: 'fill', q: '2(x + 3) = 3(x - 1)，x = ____', answer: '9' }
+        ]
+      },
+      {
+        id: 'm2-1', title: '全等三角形', desc: '全等判定与性质',
+        knowledge: [
+          { title: '全等三角形的定义', content: '能够完全重合的两个三角形叫做全等三角形。全等三角形的对应边相等，对应角相等。', formula: '△ABC ≌ △DEF' },
+          { title: '全等三角形的判定', content: 'SSS（三边对应相等）、SAS（两边及其夹角对应相等）、ASA（两角及其夹边对应相等）、AAS（两角及其中一角的对边对应相等）、HL（直角三角形斜边和一条直角边对应相等）。', example: { title: '注意', content: 'SSA（两边及其中一边的对角）不能判定三角形全等！AAA（三个角对应相等）只能判定相似，不能判定全等。' } }
+        ],
+        questions: [
+          { type: 'choice', q: '下列哪个不能判定三角形全等？', options: ['SSS', 'SAS', 'ASA', 'SSA'], answer: 3 },
+          { type: 'choice', q: '全等三角形的对应边？', options: ['相等', '不相等', '平行', '垂直'], answer: 0 },
+          { type: 'choice', q: '直角三角形全等的特殊判定方法是？', options: ['SSS', 'SAS', 'HL', 'AAA'], answer: 2 },
+          { type: 'choice', q: '两个三角形三边对应相等，这两个三角形？', options: ['全等', '相似但不全等', '既不全等也不相似', '无法判断'], answer: 0 },
+          { type: 'choice', q: 'AAA能判定三角形全等吗？', options: ['能', '不能，只能判定相似', '不能，什么都判定不了', '只能判定直角三角形'], answer: 1 }
+        ]
+      },
+      {
+        id: 'm2-2', title: '一次函数', desc: '函数概念与图像',
+        knowledge: [
+          { title: '一次函数的定义', content: '一般地，形如 y = kx + b（k, b是常数，k ≠ 0）的函数，叫做一次函数。当b = 0时，y = kx 叫做正比例函数。', formula: 'y = kx + b (k ≠ 0)' },
+          { title: '一次函数的图像与性质', content: '一次函数的图像是一条直线。k > 0时，y随x的增大而增大；k < 0时，y随x的增大而减小。|k|越大，直线越陡。', example: { title: '举例', content: 'y = 2x + 1：k=2>0，y随x增大而增大，与y轴交于(0,1)，与x轴交于(-0.5,0)。' } }
+        ],
+        questions: [
+          { type: 'choice', q: '下列哪个是一次函数？', options: ['y = 2x²', 'y = 3x + 1', 'y = 1/x', 'y = √x'], answer: 1 },
+          { type: 'choice', q: 'y = -2x + 3 中，y随x增大而？', options: ['增大', '减小', '不变', '先增大后减小'], answer: 1 },
+          { type: 'fill', q: 'y = 2x - 4 与x轴的交点横坐标是____', answer: '2' },
+          { type: 'choice', q: '正比例函数 y = kx 必过哪个点？', options: ['(0,0)', '(1,0)', '(0,1)', '(1,1)'], answer: 0 },
+          { type: 'fill', q: 'y = x + 2 与y轴的交点纵坐标是____', answer: '2' }
+        ]
+      },
+      {
+        id: 'm3-1', title: '二次函数', desc: '抛物线与顶点',
+        knowledge: [
+          { title: '二次函数的定义', content: '一般地，形如 y = ax² + bx + c（a, b, c是常数，a ≠ 0）的函数，叫做二次函数。', formula: 'y = ax² + bx + c (a ≠ 0)' },
+          { title: '二次函数的图像与性质', content: '二次函数的图像是抛物线。a > 0时开口向上，有最小值；a < 0时开口向下，有最大值。顶点坐标为(-b/2a, (4ac-b²)/4a)，对称轴为 x = -b/2a。', example: { title: '举例', content: 'y = x² - 4x + 3 = (x-2)² - 1。顶点(2,-1)，对称轴x=2，开口向上，最小值-1。' } }
+        ],
+        questions: [
+          { type: 'choice', q: 'y = x² - 4x + 3 的顶点坐标是？', options: ['(2, -1)', '(2, 1)', '(-2, -1)', '(-2, 1)'], answer: 0 },
+          { type: 'choice', q: 'y = -2x² 的开口方向是？', options: ['向上', '向下', '向左', '向右'], answer: 1 },
+          { type: 'fill', q: 'y = x² 的对称轴是 x = ____', answer: '0' },
+          { type: 'choice', q: '二次函数 y = ax² + bx + c 中，a决定什么？', options: ['开口方向和大小', '对称轴位置', '与y轴交点', '顶点纵坐标'], answer: 0 },
+          { type: 'fill', q: 'y = (x-1)² + 2 的顶点坐标是(1, ____)', answer: '2' }
+        ]
+      },
+      {
+        id: 'm3-2', title: '圆', desc: '圆的性质与计算',
+        knowledge: [
+          { title: '圆的基本概念', content: '圆是到定点的距离等于定长的所有点组成的图形。定点叫圆心，定长叫半径。直径是经过圆心的弦，直径等于2倍半径。', formula: 'C = 2πr；S = πr²' },
+          { title: '垂径定理与圆周角', content: '垂径定理：垂直于弦的直径平分弦且平分弦所对的两条弧。圆周角定理：同弧所对的圆周角等于圆心角的一半。直径所对的圆周角是直角。', example: { title: '举例', content: '半径r=5的圆，周长C=2π×5=10π≈31.4，面积S=π×5²=25π≈78.5。' } }
+        ],
+        questions: [
+          { type: 'choice', q: '半径为3的圆，面积是？', options: ['6π', '9π', '12π', '3π'], answer: 1 },
+          { type: 'choice', q: '直径所对的圆周角是？', options: ['45°', '60°', '90°', '180°'], answer: 2 },
+          { type: 'fill', q: '半径为4的圆，周长是____π（填数字）', answer: '8' },
+          { type: 'choice', q: '同弧所对的圆周角是圆心角的？', options: ['2倍', '一半', '相等', '无法确定'], answer: 1 },
+          { type: 'fill', q: '圆的直径是10，半径是____', answer: '5' }
+        ]
+      }
+    ]
+  },
+  high: {
+    name: '高中',
+    icon: 'π',
+    color: '#8b5cf6',
+    levels: [
+      {
+        id: 'h1-1', title: '集合与函数', desc: '集合运算与函数概念',
+        knowledge: [
+          { title: '集合的概念与运算', content: '集合是具有某种特定性质的事物的总体。集合的运算包括并集(∪)、交集(∩)、补集。元素与集合的关系用属于(∈)表示。', formula: 'A ∪ B = {x | x∈A 或 x∈B}；A ∩ B = {x | x∈A 且 x∈B}' },
+          { title: '函数的概念', content: '设A、B是非空的数集，如果按照某种确定的对应关系f，使对于集合A中的任意一个数x，在集合B中都有唯一确定的数f(x)和它对应，就称f: A→B为从集合A到集合B的一个函数。', example: { title: '举例', content: 'f(x) = x² + 1，定义域为R。f(2) = 2² + 1 = 5。定义域是x的取值范围，值域是f(x)的取值范围。' } }
+        ],
+        questions: [
+          { type: 'choice', q: 'A = {1,2,3}, B = {2,3,4}，A ∩ B = ?', options: ['{1,2,3,4}', '{2,3}', '{1,4}', '{1,2,3}'], answer: 1 },
+          { type: 'choice', q: 'f(x) = 2x + 1，f(3) = ?', options: ['5', '6', '7', '8'], answer: 2 },
+          { type: 'fill', q: 'A = {1,2}, B = {2,3}，A ∪ B 有____个元素', answer: '3' },
+          { type: 'choice', q: '函数 y = √(x-1) 的定义域是？', options: ['x > 1', 'x ≥ 1', 'x < 1', 'x ≤ 1'], answer: 1 },
+          { type: 'fill', q: 'f(x) = x²，f(-2) = ____', answer: '4' }
+        ]
+      },
+      {
+        id: 'h1-2', title: '三角函数', desc: '正弦余弦与诱导公式',
+        knowledge: [
+          { title: '任意角的三角函数', content: '在平面直角坐标系中，设角α的终边上任意一点P(x,y)，r = √(x²+y²)，则 sinα = y/r，cosα = x/r，tanα = y/x。', formula: 'sin²α + cos²α = 1；tanα = sinα/cosα' },
+          { title: '特殊角的三角函数值', content: '熟记30°、45°、60°等特殊角的三角函数值。sin30°=1/2，sin45°=√2/2，sin60°=√3/2；cos30°=√3/2，cos45°=√2/2，cos60°=1/2。', example: { title: '举例', content: 'sin120° = sin(180°-60°) = sin60° = √3/2。cos135° = cos(180°-45°) = -cos45° = -√2/2。' } }
+        ],
+        questions: [
+          { type: 'choice', q: 'sin30° = ?', options: ['1/2', '√2/2', '√3/2', '1'], answer: 0 },
+          { type: 'choice', q: 'cos60° = ?', options: ['1/2', '√2/2', '√3/2', '0'], answer: 0 },
+          { type: 'fill', q: 'sin45° = √____/2（填数字）', answer: '2' },
+          { type: 'choice', q: 'sin²α + cos²α = ?', options: ['0', '1', '2', 'tanα'], answer: 1 },
+          { type: 'choice', q: 'sin90° = ?', options: ['0', '1/2', '√3/2', '1'], answer: 3 }
+        ]
+      },
+      {
+        id: 'h2-1', title: '数列', desc: '等差与等比数列',
+        knowledge: [
+          { title: '等差数列', content: '如果一个数列从第2项起，每一项与它的前一项的差等于同一个常数，这个数列就叫做等差数列。这个常数叫做公差d。', formula: 'aₙ = a₁ + (n-1)d；Sₙ = n(a₁+aₙ)/2 = na₁ + n(n-1)d/2' },
+          { title: '等比数列', content: '如果一个数列从第2项起，每一项与它的前一项的比等于同一个常数，这个数列就叫做等比数列。这个常数叫做公比q(q≠0)。', formula: 'aₙ = a₁qⁿ⁻¹；Sₙ = a₁(1-qⁿ)/(1-q) (q≠1)', example: { title: '举例', content: '等差数列：2, 5, 8, 11, ... a₁=2, d=3, a₁₀=2+9×3=29, S₁₀=10×(2+29)/2=155。' } }
+        ],
+        questions: [
+          { type: 'choice', q: '等差数列 1, 3, 5, 7, ... 的第10项是？', options: ['17', '19', '21', '23'], answer: 1 },
+          { type: 'choice', q: '等比数列 2, 6, 18, ... 的公比是？', options: ['2', '3', '4', '6'], answer: 1 },
+          { type: 'fill', q: '等差数列首项2，公差3，前5项和是____', answer: '40' },
+          { type: 'choice', q: '等比数列 1, 2, 4, 8, ... 第5项是？', options: ['12', '14', '16', '32'], answer: 2 },
+          { type: 'fill', q: '等差数列 3, 7, 11, ... 的公差是____', answer: '4' }
+        ]
+      },
+      {
+        id: 'h2-2', title: '立体几何', desc: '空间几何体与体积',
+        knowledge: [
+          { title: '空间几何体', content: '柱体、锥体、台体、球体是常见的空间几何体。柱体包括棱柱和圆柱，锥体包括棱锥和圆锥。', formula: 'V柱 = Sh；V锥 = Sh/3；V球 = 4πr³/3；S球 = 4πr²' },
+          { title: '点、线、面的位置关系', content: '空间中直线与直线、直线与平面、平面与平面之间存在平行和垂直等位置关系。线面平行判定：平面外一条直线与此平面内的一条直线平行，则该直线与此平面平行。', example: { title: '举例', content: '半径r=3的球，体积V = 4π×27/3 = 36π，表面积S = 4π×9 = 36π。' } }
+        ],
+        questions: [
+          { type: 'choice', q: '半径为2的球的体积是？', options: ['8π/3', '16π/3', '32π/3', '64π/3'], answer: 2 },
+          { type: 'choice', q: '底面积为6，高为4的圆锥体积是？', options: ['8', '12', '16', '24'], answer: 0 },
+          { type: 'fill', q: '半径为1的球的表面积是____π', answer: '4' },
+          { type: 'choice', q: '正方体的棱长为2，体积是？', options: ['4', '6', '8', '16'], answer: 2 },
+          { type: 'fill', q: '底面积10，高3的圆柱体积是____', answer: '30' }
+        ]
+      },
+      {
+        id: 'h3-1', title: '导数及其应用', desc: '导数概念与运算',
+        knowledge: [
+          { title: '导数的概念', content: '函数y=f(x)在x=x₀处的导数f\'(x₀)就是函数在该点处的瞬时变化率，几何意义是曲线y=f(x)在点(x₀,f(x₀))处的切线斜率。', formula: "f'(x₀) = lim(Δx→0) [f(x₀+Δx)-f(x₀)]/Δx" },
+          { title: '基本初等函数的导数公式', content: "(xⁿ)' = nxⁿ⁻¹；(sinx)' = cosx；(cosx)' = -sinx；(eˣ)' = eˣ；(lnx)' = 1/x。导数四则运算：(u±v)' = u'±v'；(uv)' = u'v + uv'；(u/v)' = (u'v-uv')/v²。", example: { title: '举例', content: "f(x) = x³ - 2x² + 1，f'(x) = 3x² - 4x。f'(1) = 3 - 4 = -1，即x=1处切线斜率为-1。" } }
+        ],
+        questions: [
+          { type: 'choice', q: "(x³)' = ?", options: ['x²', '2x²', '3x²', '3x'], answer: 2 },
+          { type: 'choice', q: "(sinx)' = ?", options: ['-cosx', 'cosx', '-sinx', 'tanx'], answer: 1 },
+          { type: 'fill', q: "f(x) = x²，f'(3) = ____", answer: '6' },
+          { type: 'choice', q: "(eˣ)' = ?", options: ['xeˣ⁻¹', 'eˣ', 'eˣ/x', '1/x'], answer: 1 },
+          { type: 'fill', q: "f(x) = 2x + 1，f'(x) = ____", answer: '2' }
+        ]
+      },
+      {
+        id: 'h3-2', title: '概率统计', desc: '古典概型与分布',
+        knowledge: [
+          { title: '古典概型', content: '如果试验中所有可能出现的基本事件只有有限个，且每个基本事件出现的可能性相等，这样的概率模型称为古典概型。', formula: 'P(A) = A包含的基本事件数 / 基本事件总数' },
+          { title: '离散型随机变量', content: '离散型随机变量的分布列列出了所有可能取值及其概率。数学期望E(X) = Σxᵢpᵢ，方差D(X) = E(X²) - [E(X)]²。二项分布X~B(n,p)：E(X)=np，D(X)=np(1-p)。', example: { title: '举例', content: '掷一枚骰子，出现偶数的概率 = 3/6 = 1/2。掷两枚硬币，至少一枚正面的概率 = 3/4。' } }
+        ],
+        questions: [
+          { type: 'choice', q: '掷一枚均匀骰子，出现点数大于4的概率是？', options: ['1/6', '1/3', '1/2', '2/3'], answer: 1 },
+          { type: 'choice', q: '从1,2,3,4,5中随机取一个数，取到偶数的概率是？', options: ['1/5', '2/5', '3/5', '4/5'], answer: 1 },
+          { type: 'fill', q: '掷两枚硬币，都是正面的概率是____（填分数）', answer: '1/4' },
+          { type: 'choice', q: 'X~B(10, 0.5)，E(X) = ?', options: ['2.5', '5', '7.5', '10'], answer: 1 },
+          { type: 'fill', q: '袋中有3红2白球，取到红球的概率是____（填分数）', answer: '3/5' }
+        ]
+      }
+    ]
+  },
+  university: {
+    name: '大学',
+    icon: '∫',
+    color: '#ef4444',
+    levels: [
+      {
+        id: 'u1-1', title: '极限与连续', desc: '极限概念与计算',
+        knowledge: [
+          { title: '数列极限', content: '对于数列{aₙ}，如果当n无限增大时，aₙ无限趋近于一个确定的常数A，就称A为数列{aₙ}的极限，记作lim(n→∞) aₙ = A。', formula: 'lim(n→∞) 1/n = 0；lim(n→∞) (1+1/n)ⁿ = e' },
+          { title: '函数极限与两个重要极限', content: 'lim(x→0) sinx/x = 1；lim(x→∞) (1+1/x)ˣ = e。等价无穷小替换：x→0时，sinx~x，tanx~x，ln(1+x)~x，eˣ-1~x，1-cosx~x²/2。', example: { title: '举例', content: 'lim(x→0) sin3x/x = lim(x→0) 3·sin3x/(3x) = 3×1 = 3。lim(x→∞) (1+2/x)ˣ = lim(x→∞) [(1+2/x)^(x/2)]² = e²。' } }
+        ],
+        questions: [
+          { type: 'choice', q: 'lim(x→0) sinx/x = ?', options: ['0', '1', '∞', '不存在'], answer: 1 },
+          { type: 'choice', q: 'lim(n→∞) 1/n = ?', options: ['0', '1', '∞', '不存在'], answer: 0 },
+          { type: 'fill', q: 'lim(x→0) sin2x/x = ____', answer: '2' },
+          { type: 'choice', q: 'lim(x→∞) (1+1/x)ˣ = ?', options: ['1', 'e', 'e²', '∞'], answer: 1 },
+          { type: 'fill', q: 'lim(x→0) (eˣ-1)/x = ____', answer: '1' }
+        ]
+      },
+      {
+        id: 'u1-2', title: '导数与微分', desc: '求导法则与应用',
+        knowledge: [
+          { title: '复合函数求导（链式法则）', content: '设y=f(u)，u=φ(x)，则dy/dx = (dy/du)·(du/dx) = f\'(u)·φ\'(x)。', formula: 'd/dx [f(g(x))] = f\'(g(x))·g\'(x)' },
+          { title: '隐函数求导与高阶导数', content: '隐函数求导：方程F(x,y)=0两边对x求导，解出dy/dx。二阶导数是一阶导数的导数，记作d²y/dx²或y\'\'。洛必达法则：0/0或∞/∞型极限，lim f/g = lim f\'/g\'。', example: { title: '举例', content: "y = sin(x²)，令u=x²，y=sinu。dy/dx = cosu·2x = 2x·cos(x²)。" } }
+        ],
+        questions: [
+          { type: 'choice', q: "y = sin(2x)，y' = ?", options: ['cos(2x)', '2cos(2x)', '-2cos(2x)', '2sin(2x)'], answer: 1 },
+          { type: 'choice', q: "y = e^(x²)，y' = ?", options: ['e^(x²)', '2xe^(x²)', 'x²e^(x²)', '2e^(x²)'], answer: 1 },
+          { type: 'fill', q: "y = ln(x)，y'' = ____（用1/x^n形式）", answer: '-1/x²' },
+          { type: 'choice', q: "y = (x³)' = ?", options: ['x²', '2x²', '3x²', '3x'], answer: 2 },
+          { type: 'fill', q: "y = cosx，y' = ____", answer: '-sinx' }
+        ]
+      },
+      {
+        id: 'u1-3', title: '不定积分', desc: '积分公式与换元法',
+        knowledge: [
+          { title: '不定积分的概念', content: '如果F\'(x) = f(x)，则称F(x)为f(x)的一个原函数。f(x)的全体原函数F(x)+C称为f(x)的不定积分，记作∫f(x)dx = F(x)+C。', formula: '∫xⁿdx = xⁿ⁺¹/(n+1) + C (n≠-1)；∫1/x dx = ln|x| + C' },
+          { title: '基本积分公式与换元积分法', content: '∫eˣdx = eˣ+C；∫sinxdx = -cosx+C；∫cosxdx = sinx+C。第一类换元法（凑微分）：∫f(φ(x))φ\'(x)dx = ∫f(u)du。', example: { title: '举例', content: '∫2x·cos(x²)dx，令u=x²，du=2xdx。原式=∫cosu du = sinu+C = sin(x²)+C。' } }
+        ],
+        questions: [
+          { type: 'choice', q: '∫x² dx = ?', options: ['x³/3 + C', 'x³ + C', '2x + C', 'x²/2 + C'], answer: 0 },
+          { type: 'choice', q: '∫sinx dx = ?', options: ['cosx + C', '-cosx + C', 'sinx + C', '-sinx + C'], answer: 1 },
+          { type: 'fill', q: '∫eˣ dx = ____ + C', answer: 'eˣ' },
+          { type: 'choice', q: '∫1/x dx = ?', options: ['x + C', '1/x² + C', 'ln|x| + C', '-1/x² + C'], answer: 2 },
+          { type: 'fill', q: '∫2x dx = ____ + C', answer: 'x²' }
+        ]
+      },
+      {
+        id: 'u1-4', title: '定积分', desc: '牛顿-莱布尼茨公式',
+        knowledge: [
+          { title: '定积分的概念', content: '定积分∫[a,b] f(x)dx表示曲线y=f(x)、直线x=a、x=b与x轴所围成的曲边梯形的面积（代数和）。', formula: '∫[a,b] f(x)dx = F(b) - F(a)（牛顿-莱布尼茨公式）' },
+          { title: '定积分的性质与应用', content: '∫[a,b] [f(x)±g(x)]dx = ∫[a,b]f(x)dx ± ∫[a,b]g(x)dx。∫[a,b] kf(x)dx = k∫[a,b]f(x)dx。旋转体体积：V = π∫[a,b] [f(x)]²dx。', example: { title: '举例', content: '∫[0,1] x²dx = [x³/3]₀¹ = 1/3 - 0 = 1/3。∫[0,π] sinx dx = [-cosx]₀^π = -cosπ - (-cos0) = 1 + 1 = 2。' } }
+        ],
+        questions: [
+          { type: 'choice', q: '∫[0,1] x dx = ?', options: ['0', '1/2', '1', '2'], answer: 1 },
+          { type: 'choice', q: '∫[0,π] sinx dx = ?', options: ['0', '1', '2', 'π'], answer: 2 },
+          { type: 'fill', q: '∫[0,2] 1 dx = ____', answer: '2' },
+          { type: 'choice', q: '∫[1,e] 1/x dx = ?', options: ['0', '1', 'e', 'e-1'], answer: 1 },
+          { type: 'fill', q: '∫[0,1] 2x dx = ____', answer: '1' }
+        ]
+      },
+      {
+        id: 'u2-1', title: '矩阵与行列式', desc: '线性代数基础',
+        knowledge: [
+          { title: '矩阵的概念与运算', content: '由m×n个数排成的m行n列的数表称为m×n矩阵。矩阵加法：对应元素相加。数乘矩阵：每个元素都乘以该数。矩阵乘法：(AB)ᵢⱼ = Σₖ AᵢₖBₖⱼ。', formula: 'A = (aᵢⱼ)ₘ×ₙ' },
+          { title: '行列式', content: '二阶行列式 |a b; c d| = ad - bc。三阶行列式可用对角线法则或按行展开计算。行列式性质：转置行列式值不变；两行互换，行列式变号；某行全为0则行列式为0。', example: { title: '举例', content: '|2 3; 1 4| = 2×4 - 3×1 = 8 - 3 = 5。矩阵A=[1 2; 3 4]，B=[5 6; 7 8]，AB=[1×5+2×7 1×6+2×8; 3×5+4×7 3×6+4×8] = [19 22; 43 50]。' } }
+        ],
+        questions: [
+          { type: 'choice', q: '二阶行列式 |2 1; 3 4| = ?', options: ['5', '8', '11', '-5'], answer: 0 },
+          { type: 'choice', q: '矩阵 [1 2] + [3 4] = ?', options: ['[4 6]', '[3 8]', '[4 8]', '[1 6]'], answer: 0 },
+          { type: 'fill', q: '行列式 |1 0; 0 1| = ____', answer: '1' },
+          { type: 'choice', q: '2 × [1 2; 3 4] = ?', options: ['[2 4; 6 8]', '[3 4; 5 6]', '[2 2; 3 4]', '[1 4; 6 4]'], answer: 0 },
+          { type: 'fill', q: '行列式 |3 0; 0 2| = ____', answer: '6' }
+        ]
+      },
+      {
+        id: 'u3-1', title: '概率论基础', desc: '随机变量与数字特征',
+        knowledge: [
+          { title: '随机变量及其分布', content: '随机变量是定义在样本空间上的实值函数。离散型随机变量用分布律描述，连续型用概率密度函数f(x)描述，满足∫(-∞,+∞)f(x)dx=1。', formula: 'P(a<X≤b) = ∫[a,b] f(x)dx' },
+          { title: '数学期望与方差', content: '数学期望E(X)反映随机变量取值的平均水平。方差D(X)=E[(X-E(X))²]反映取值的离散程度。性质：E(aX+b)=aE(X)+b；D(aX+b)=a²D(X)。正态分布X~N(μ,σ²)：E(X)=μ，D(X)=σ²。', example: { title: '举例', content: 'X~N(0,1)（标准正态分布），E(X)=0，D(X)=1。P(-1<X<1)≈0.6826，P(-2<X<2)≈0.9544。' } }
+        ],
+        questions: [
+          { type: 'choice', q: 'X~N(0,1)，E(X) = ?', options: ['0', '1', '-1', '不确定'], answer: 0 },
+          { type: 'choice', q: 'D(2X+3) = ?', options: ['2D(X)+3', '4D(X)', '4D(X)+3', '2D(X)'], answer: 1 },
+          { type: 'fill', q: 'X~N(μ,σ²)，D(X) = ____', answer: 'σ²' },
+          { type: 'choice', q: 'E(3X+2) = ?', options: ['3E(X)', '3E(X)+2', 'E(X)+2', '9E(X)+2'], answer: 1 },
+          { type: 'fill', q: '标准正态分布的方差是____', answer: '1' }
+        ]
+      }
+    ]
+  }
+};
+
+// ============================================================
+// 等级系统
+// ============================================================
+const LEVELS = [
+  { level: 1, name: '数学新手', xp: 0 },
+  { level: 2, name: '算术学徒', xp: 100 },
+  { level: 3, name: '计算能手', xp: 250 },
+  { level: 4, name: '代数入门', xp: 500 },
+  { level: 5, name: '方程达人', xp: 800 },
+  { level: 6, name: '几何学者', xp: 1200 },
+  { level: 7, name: '函数高手', xp: 1700 },
+  { level: 8, name: '三角专家', xp: 2300 },
+  { level: 9, name: '数列大师', xp: 3000 },
+  { level: 10, name: '导数先锋', xp: 3800 },
+  { level: 11, name: '积分勇者', xp: 4700 },
+  { level: 12, name: '微积分达人', xp: 5700 },
+  { level: 13, name: '线代探索者', xp: 6800 },
+  { level: 14, name: '概率统计师', xp: 8000 },
+  { level: 15, name: '数学大师', xp: 10000 }
+];
+
+const ACHIEVEMENTS = [
+  { id: 'first_lesson', name: '初出茅庐', desc: '完成第一个关卡', icon: '★' },
+  { id: 'streak_3', name: '三日之约', desc: '连续打卡3天', icon: '◆' },
+  { id: 'streak_7', name: '一周坚持', desc: '连续打卡7天', icon: '▲' },
+  { id: 'streak_30', name: '月度达人', desc: '连续打卡30天', icon: '●' },
+  { id: 'elementary_done', name: '小学毕业', desc: '完成小学全部关卡', icon: '∑' },
+  { id: 'middle_done', name: '初中毕业', desc: '完成初中全部关卡', icon: '√' },
+  { id: 'high_done', name: '高中毕业', desc: '完成高中全部关卡', icon: 'π' },
+  { id: 'university_done', name: '大学毕业', desc: '完成大学全部关卡', icon: '∫' }
+];
+
+// ============================================================
+// 状态管理
+// ============================================================
+const STORAGE_KEY = 'math_quest_progress';
+
+let state = {
+  xp: 0,
+  hearts: 5,
+  maxHearts: 5,
+  completedLessons: {}, // { lessonId: { stars: 1-3, bestScore: number, attempts: number } }
+  checkinDates: [], // ['2026-09-01', ...]
+  streak: 0,
+  totalQuestions: 0,
+  correctQuestions: 0,
+  currentStage: 'elementary'
+};
+
+function loadState() {
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) {
+      state = { ...state, ...JSON.parse(saved) };
+    }
+  } catch (e) {
+    console.error('加载进度失败', e);
+  }
+}
+
+function saveState() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  } catch (e) {
+    console.error('保存进度失败', e);
+  }
+}
+
+function getCurrentLevel() {
+  let current = LEVELS[0];
+  for (const lvl of LEVELS) {
+    if (state.xp >= lvl.xp) current = lvl;
+  }
+  return current;
+}
+
+function getNextLevel() {
+  const current = getCurrentLevel();
+  const idx = LEVELS.findIndex(l => l.level === current.level);
+  return idx < LEVELS.length - 1 ? LEVELS[idx + 1] : null;
+}
+
+function getStageProgress(stageKey) {
+  const stage = CURRICULUM[stageKey];
+  const total = stage.levels.length;
+  let completed = 0;
+  for (const lvl of stage.levels) {
+    if (state.completedLessons[lvl.id]) completed++;
+  }
+  return { completed, total };
+}
+
+function isLessonUnlocked(lessonId, stageKey) {
+  // 小学阶段全部解锁
+  if (stageKey === 'elementary') return true;
+  const stage = CURRICULUM[stageKey];
+  const idx = stage.levels.findIndex(l => l.id === lessonId);
+  if (idx === 0) return true;
+  const prevLesson = stage.levels[idx - 1];
+  return !!state.completedLessons[prevLesson.id];
+}
+
+function isStageUnlocked(stageKey) {
+  const stages = ['elementary', 'middle', 'high', 'university'];
+  const idx = stages.indexOf(stageKey);
+  if (idx === 0) return true;
+  const prevStage = stages[idx - 1];
+  const progress = getStageProgress(prevStage);
+  return progress.completed >= Math.ceil(progress.total * 0.6); // 完成60%解锁下一阶段
+}
+
+// ============================================================
+// 路由
+// ============================================================
+function navigate(view) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.getElementById('view-' + view).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  const navItem = document.querySelector(`.nav-item[data-view="${view}"]`);
+  if (navItem) navItem.classList.add('active');
+  window.scrollTo(0, 0);
+
+  if (view === 'home') renderHome();
+  if (view === 'checkin') renderCheckin();
+  if (view === 'profile') renderProfile();
+}
+
+// ============================================================
+// 首页渲染
+// ============================================================
+function renderHome() {
+  const currentLvl = getCurrentLevel();
+  const nextLvl = getNextLevel();
+
+  document.getElementById('level-badge').textContent = `Lv.${currentLvl.level} ${currentLvl.name}`;
+  document.getElementById('xp-text').textContent = state.xp;
+  document.getElementById('streak-text').textContent = state.streak;
+  document.getElementById('xp-current-label').textContent = `${state.xp} XP`;
+
+  if (nextLvl) {
+    document.getElementById('xp-next-label').textContent = `下一级 ${nextLvl.xp} XP`;
+    const progress = ((state.xp - currentLvl.xp) / (nextLvl.xp - currentLvl.xp)) * 100;
+    document.getElementById('xp-fill').style.width = Math.min(100, Math.max(0, progress)) + '%';
+  } else {
+    document.getElementById('xp-next-label').textContent = '已满级';
+    document.getElementById('xp-fill').style.width = '100%';
+  }
+
+  // 阶段标签
+  const tabsContainer = document.getElementById('stage-tabs');
+  tabsContainer.innerHTML = '';
+  const stages = ['elementary', 'middle', 'high', 'university'];
+  stages.forEach(stageKey => {
+    const stage = CURRICULUM[stageKey];
+    const unlocked = isStageUnlocked(stageKey);
+    const tab = document.createElement('div');
+    tab.className = 'stage-tab' + (state.currentStage === stageKey ? ' active' : '') + (!unlocked ? ' locked' : '');
+    tab.textContent = stage.name + (unlocked ? '' : '（未解锁）');
+    if (unlocked) {
+      tab.onclick = () => { state.currentStage = stageKey; saveState(); renderHome(); };
+    }
+    tabsContainer.appendChild(tab);
+  });
+
+  // 学习路径
+  const pathContainer = document.getElementById('learning-path');
+  const stage = CURRICULUM[state.currentStage];
+  pathContainer.innerHTML = '<div class="path-line"></div>';
+
+  stage.levels.forEach((lvl, idx) => {
+    const completed = state.completedLessons[lvl.id];
+    const unlocked = isLessonUnlocked(lvl.id, state.currentStage);
+    const isCurrent = unlocked && !completed;
+
+    const node = document.createElement('div');
+    node.className = 'level-node';
+
+    let circleClass = 'locked';
+    if (completed) circleClass = 'completed';
+    else if (isCurrent) circleClass = 'current';
+
+    const stars = completed ? completed.stars : 0;
+
+    node.innerHTML = `
+      <div class="node-circle ${circleClass}" ${unlocked ? `onclick="openLesson('${lvl.id}')"` : ''}>
+        ${completed ? '✓' : (unlocked ? stage.icon : '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>')}
+        ${completed ? `<div class="node-stars">
+          ${[1,2,3].map(s => `<svg viewBox="0 0 24 24" fill="${s <= stars ? '#f59e0b' : '#e2e8f0'}"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/></svg>`).join('')}
+        </div>` : ''}
+      </div>
+      <div class="node-info">
+        <div class="node-title">${lvl.title}</div>
+        <div class="node-desc">${lvl.desc}</div>
+      </div>
+    `;
+    pathContainer.appendChild(node);
+  });
+}
+
+// ============================================================
+// 关卡详情
+// ============================================================
+let currentLesson = null;
+
+function openLesson(lessonId) {
+  let lesson = null;
+  let stageKey = null;
+  for (const sk of Object.keys(CURRICULUM)) {
+    const found = CURRICULUM[sk].levels.find(l => l.id === lessonId);
+    if (found) { lesson = found; stageKey = sk; break; }
+  }
+  if (!lesson) return;
+
+  currentLesson = lesson;
+  document.getElementById('lesson-title').textContent = lesson.title;
+  document.getElementById('lesson-subtitle').textContent = `${CURRICULUM[stageKey].name} · ${lesson.desc}`;
+
+  const content = document.getElementById('lesson-content');
+  content.innerHTML = '';
+
+  lesson.knowledge.forEach(k => {
+    const card = document.createElement('div');
+    card.className = 'knowledge-card';
+    let html = `<h3>${k.title}</h3><p>${k.content}</p>`;
+    if (k.formula) html += `<div class="formula">${k.formula}</div>`;
+    if (k.example) html += `<div class="example"><div class="example-title">${k.example.title}</div><p>${k.example.content}</p></div>`;
+    card.innerHTML = html;
+    content.appendChild(card);
+  });
+
+  const btn = document.createElement('button');
+  btn.className = 'start-quiz-btn';
+  btn.textContent = '开始闯关';
+  btn.onclick = startQuiz;
+  content.appendChild(btn);
+
+  navigate('lesson');
+}
+
+// ============================================================
+// 答题系统
+// ============================================================
+let quizState = {
+  questions: [],
+  currentIndex: 0,
+  correctCount: 0,
+  selectedAnswer: null,
+  answered: false,
+  hearts: 5
+};
+
+function startQuiz() {
+  if (!currentLesson) return;
+  if (state.hearts <= 0) {
+    showToast('爱心不足，请等待恢复或明日再来');
+    return;
+  }
+
+  quizState = {
+    questions: [...currentLesson.questions],
+    currentIndex: 0,
+    correctCount: 0,
+    selectedAnswer: null,
+    answered: false,
+    hearts: state.hearts
+  };
+
+  navigate('quiz');
+  renderQuestion();
+}
+
+function renderQuestion() {
+  const q = quizState.questions[quizState.currentIndex];
+  const total = quizState.questions.length;
+  const progress = (quizState.currentIndex / total) * 100;
+
+  document.getElementById('quiz-progress-fill').style.width = progress + '%';
+
+  // 爱心
+  const heartsContainer = document.getElementById('quiz-hearts');
+  heartsContainer.innerHTML = '';
+  for (let i = 0; i < state.maxHearts; i++) {
+    const heart = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    heart.setAttribute('viewBox', '0 0 24 24');
+    heart.setAttribute('fill', 'currentColor');
+    heart.innerHTML = '<path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>';
+    heart.className = i < quizState.hearts ? '' : 'lost';
+    heartsContainer.appendChild(heart);
+  }
+
+  const body = document.getElementById('quiz-body');
+  body.innerHTML = '';
+
+  const numDiv = document.createElement('div');
+  numDiv.className = 'question-number';
+  numDiv.textContent = `第 ${quizState.currentIndex + 1} 题 / 共 ${total} 题`;
+  body.appendChild(numDiv);
+
+  const qText = document.createElement('div');
+  qText.className = 'question-text';
+  qText.textContent = q.q;
+  body.appendChild(qText);
+
+  quizState.selectedAnswer = null;
+  quizState.answered = false;
+
+  if (q.type === 'choice') {
+    const optionsList = document.createElement('div');
+    optionsList.className = 'options-list';
+    q.options.forEach((opt, idx) => {
+      const btn = document.createElement('button');
+      btn.className = 'option-btn';
+      btn.innerHTML = `<span class="option-letter">${String.fromCharCode(65 + idx)}</span><span>${opt}</span>`;
+      btn.onclick = () => selectOption(idx, btn);
+      optionsList.appendChild(btn);
+    });
+    body.appendChild(optionsList);
+  } else if (q.type === 'fill') {
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.className = 'fill-input';
+    input.placeholder = '请输入答案';
+    input.id = 'fill-answer';
+    body.appendChild(input);
+  }
+
+  // 底部按钮
+  const footer = document.getElementById('quiz-footer');
+  footer.innerHTML = '';
+  const submitBtn = document.createElement('button');
+  submitBtn.className = 'submit-btn';
+  submitBtn.textContent = '确认答案';
+  submitBtn.disabled = true;
+  submitBtn.id = 'submit-btn';
+  submitBtn.onclick = submitAnswer;
+  footer.appendChild(submitBtn);
+
+  if (q.type === 'fill') {
+    const input = document.getElementById('fill-answer');
+    input.addEventListener('input', () => {
+      submitBtn.disabled = input.value.trim() === '';
+    });
+    input.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter' && !submitBtn.disabled) submitAnswer();
+    });
+  }
+}
+
+function selectOption(idx, btn) {
+  if (quizState.answered) return;
+  document.querySelectorAll('.option-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  quizState.selectedAnswer = idx;
+  document.getElementById('submit-btn').disabled = false;
+}
+
+function submitAnswer() {
+  if (quizState.answered) return;
+  const q = quizState.questions[quizState.currentIndex];
+  let userAnswer = null;
+  let isCorrect = false;
+
+  if (q.type === 'choice') {
+    if (quizState.selectedAnswer === null) return;
+    userAnswer = quizState.selectedAnswer;
+    isCorrect = userAnswer === q.answer;
+  } else if (q.type === 'fill') {
+    const input = document.getElementById('fill-answer');
+    userAnswer = input.value.trim();
+    isCorrect = userAnswer === q.answer || userAnswer === q.answer.replace(/\s/g, '');
+  }
+
+  quizState.answered = true;
+  state.totalQuestions++;
+
+  // 显示正确/错误
+  if (q.type === 'choice') {
+    const buttons = document.querySelectorAll('.option-btn');
+    buttons.forEach((b, idx) => {
+      b.disabled = true;
+      if (idx === q.answer) b.classList.add('correct');
+      else if (idx === quizState.selectedAnswer && !isCorrect) b.classList.add('wrong');
+    });
+  }
+
+  // 反馈
+  const body = document.getElementById('quiz-body');
+  const existingBanner = body.querySelector('.feedback-banner');
+  if (existingBanner) existingBanner.remove();
+
+  const banner = document.createElement('div');
+  banner.className = 'feedback-banner ' + (isCorrect ? 'correct' : 'wrong');
+  if (isCorrect) {
+    quizState.correctCount++;
+    state.correctQuestions++;
+    banner.innerHTML = `<div class="feedback-title">回答正确！</div><div class="feedback-detail">+10 XP</div>`;
+  } else {
+    quizState.hearts--;
+    state.hearts = Math.max(0, quizState.hearts);
+    const correctText = q.type === 'choice' ? q.options[q.answer] : q.answer;
+    banner.innerHTML = `<div class="feedback-title">回答错误</div><div class="feedback-detail">正确答案：${correctText}</div>`;
+  }
+  body.appendChild(banner);
+
+  // 更新按钮
+  const submitBtn = document.getElementById('submit-btn');
+  submitBtn.textContent = quizState.currentIndex < quizState.questions.length - 1 ? '下一题' : '查看结果';
+  submitBtn.className = 'submit-btn ' + (isCorrect ? 'correct-mode' : 'wrong-mode');
+  submitBtn.disabled = false;
+  submitBtn.onclick = nextQuestion;
+
+  saveState();
+}
+
+function nextQuestion() {
+  if (quizState.currentIndex < quizState.questions.length - 1) {
+    quizState.currentIndex++;
+    renderQuestion();
+  } else {
+    showResult();
+  }
+}
+
+function quitQuiz() {
+  if (confirm('确定要退出本次闯关吗？当前进度将不会保存。')) {
+    navigate('home');
+  }
+}
+
+// ============================================================
+// 结算页
+// ============================================================
+function showResult() {
+  const total = quizState.questions.length;
+  const correct = quizState.correctCount;
+  const accuracy = Math.round((correct / total) * 100);
+  const passed = accuracy >= 60;
+  const stars = accuracy >= 90 ? 3 : (accuracy >= 70 ? 2 : (passed ? 1 : 0));
+  const xpEarned = correct * 10 + (passed ? 20 : 0) + (stars === 3 ? 10 : 0);
+
+  state.xp += xpEarned;
+
+  if (passed && currentLesson) {
+    const prev = state.completedLessons[currentLesson.id];
+    if (!prev || stars > prev.stars) {
+      state.completedLessons[currentLesson.id] = {
+        stars: stars,
+        bestScore: accuracy,
+        attempts: (prev ? prev.attempts : 0) + 1,
+        completedAt: new Date().toISOString()
+      };
+    } else {
+      prev.attempts++;
+    }
+  }
+
+  // 检查成就
+  checkAchievements();
+
+  saveState();
+
+  const container = document.getElementById('result-container');
+  container.innerHTML = '';
+
+  // 彩带
+  if (passed) {
+    for (let i = 0; i < 30; i++) {
+      const confetti = document.createElement('div');
+      confetti.className = 'confetti';
+      confetti.style.left = Math.random() * 100 + '%';
+      confetti.style.background = ['#f59e0b', '#10b981', '#3b82f6', '#ef4444', '#8b5cf6'][Math.floor(Math.random() * 5)];
+      confetti.style.animationDelay = Math.random() * 2 + 's';
+      confetti.style.animationDuration = (2 + Math.random() * 2) + 's';
+      container.appendChild(confetti);
+    }
+  }
+
+  const icon = document.createElement('div');
+  icon.className = 'result-icon ' + (passed ? 'pass' : 'fail');
+  icon.innerHTML = passed
+    ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>'
+    : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>';
+  container.appendChild(icon);
+
+  const title = document.createElement('div');
+  title.className = 'result-title';
+  title.textContent = passed ? '闯关成功！' : '继续加油！';
+  container.appendChild(title);
+
+  const subtitle = document.createElement('div');
+  subtitle.className = 'result-subtitle';
+  subtitle.textContent = currentLesson ? currentLesson.title : '';
+  container.appendChild(subtitle);
+
+  // 星星
+  const starsDiv = document.createElement('div');
+  starsDiv.className = 'result-stars';
+  for (let i = 1; i <= 3; i++) {
+    const star = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    star.setAttribute('viewBox', '0 0 24 24');
+    star.setAttribute('fill', 'currentColor');
+    star.innerHTML = '<path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/>';
+    if (i <= stars) star.classList.add('earned');
+    starsDiv.appendChild(star);
+  }
+  container.appendChild(starsDiv);
+
+  const stats = document.createElement('div');
+  stats.className = 'result-stats';
+  stats.innerHTML = `
+    <div class="result-stat"><div class="stat-value">${correct}/${total}</div><div class="stat-label">答对题数</div></div>
+    <div class="result-stat"><div class="stat-value">${accuracy}%</div><div class="stat-label">正确率</div></div>
+    <div class="result-stat"><div class="stat-value">+${xpEarned}</div><div class="stat-label">获得经验</div></div>
+    <div class="result-stat"><div class="stat-value">${quizState.hearts}</div><div class="stat-label">剩余爱心</div></div>
+  `;
+  container.appendChild(stats);
+
+  const actions = document.createElement('div');
+  actions.className = 'result-actions';
+
+  const continueBtn = document.createElement('button');
+  continueBtn.className = 'btn-primary';
+  continueBtn.textContent = '返回学习路径';
+  continueBtn.onclick = () => navigate('home');
+  actions.appendChild(continueBtn);
+
+  if (!passed) {
+    const retryBtn = document.createElement('button');
+    retryBtn.className = 'btn-secondary';
+    retryBtn.textContent = '再试一次';
+    retryBtn.onclick = startQuiz;
+    actions.appendChild(retryBtn);
+  }
+
+  container.appendChild(actions);
+  navigate('result');
+}
+
+// ============================================================
+// 打卡系统
+// ============================================================
+function renderCheckin() {
+  document.getElementById('checkin-streak-num').textContent = state.streak;
+
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = now.getMonth();
+  const today = now.getDate();
+
+  const monthNames = ['一月', '二月', '三月', '四月', '五月', '六月', '七月', '八月', '九月', '十月', '十一月', '十二月'];
+  document.getElementById('calendar-month').textContent = `${year}年 ${monthNames[month]}`;
+
+  const grid = document.getElementById('calendar-grid');
+  grid.innerHTML = '';
+
+  const dayHeaders = ['日', '一', '二', '三', '四', '五', '六'];
+  dayHeaders.forEach(d => {
+    const h = document.createElement('div');
+    h.className = 'calendar-day-header';
+    h.textContent = d;
+    grid.appendChild(h);
+  });
+
+  const firstDay = new Date(year, month, 1).getDay();
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+  for (let i = 0; i < firstDay; i++) {
+    const empty = document.createElement('div');
+    empty.className = 'calendar-day empty';
+    grid.appendChild(empty);
+  }
+
+  for (let d = 1; d <= daysInMonth; d++) {
+    const dayEl = document.createElement('div');
+    dayEl.className = 'calendar-day';
+    dayEl.textContent = d;
+
+    const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+    if (state.checkinDates.includes(dateStr)) {
+      dayEl.classList.add('checked');
+    }
+    if (d === today) {
+      dayEl.classList.add('today');
+    }
+    if (d > today) {
+      dayEl.classList.add('future');
+    }
+
+    grid.appendChild(dayEl);
+  }
+
+  // 打卡按钮
+  const todayStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(today).padStart(2, '0')}`;
+  const btn = document.getElementById('checkin-btn');
+  if (state.checkinDates.includes(todayStr)) {
+    btn.textContent = '今日已打卡';
+    btn.disabled = true;
+  } else {
+    btn.textContent = '今日打卡';
+    btn.disabled = false;
+  }
+
+  // 本周统计
+  const weekStart = new Date(now);
+  weekStart.setDate(now.getDate() - now.getDay());
+  let weekCount = 0;
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(weekStart);
+    d.setDate(weekStart.getDate() + i);
+    const ds = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    if (state.checkinDates.includes(ds)) weekCount++;
+  }
+  document.getElementById('weekly-count').textContent = `${weekCount}/7`;
+  document.getElementById('weekly-goal-fill').style.width = (weekCount / 7 * 100) + '%';
+}
+
+function doCheckin() {
+  const now = new Date();
+  const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+
+  if (state.checkinDates.includes(todayStr)) {
+    showToast('今日已打卡');
+    return;
+  }
+
+  // 计算连续天数
+  const yesterday = new Date(now);
+  yesterday.setDate(now.getDate() - 1);
+  const yesterdayStr = `${yesterday.getFullYear()}-${String(yesterday.getMonth() + 1).padStart(2, '0')}-${String(yesterday.getDate()).padStart(2, '0')}`;
+
+  if (state.checkinDates.includes(yesterdayStr)) {
+    state.streak++;
+  } else {
+    state.streak = 1;
+  }
+
+  state.checkinDates.push(todayStr);
+  state.xp += 5; // 打卡奖励
+
+  checkAchievements();
+  saveState();
+  showToast(`打卡成功！连续 ${state.streak} 天，+5 XP`);
+  renderCheckin();
+}
+
+// ============================================================
+// 成就系统
+// ============================================================
+function checkAchievements() {
+  // 首关
+  if (Object.keys(state.completedLessons).length >= 1) {
+    // 成就解锁逻辑在渲染时判断
+  }
+}
+
+function isAchievementUnlocked(achId) {
+  switch (achId) {
+    case 'first_lesson': return Object.keys(state.completedLessons).length >= 1;
+    case 'streak_3': return state.streak >= 3;
+    case 'streak_7': return state.streak >= 7;
+    case 'streak_30': return state.streak >= 30;
+    case 'elementary_done': return getStageProgress('elementary').completed === CURRICULUM.elementary.levels.length;
+    case 'middle_done': return getStageProgress('middle').completed === CURRICULUM.middle.levels.length;
+    case 'high_done': return getStageProgress('high').completed === CURRICULUM.high.levels.length;
+    case 'university_done': return getStageProgress('university').completed === CURRICULUM.university.levels.length;
+    default: return false;
+  }
+}
+
+// ============================================================
+// 个人中心
+// ============================================================
+function renderProfile() {
+  const currentLvl = getCurrentLevel();
+  document.getElementById('profile-level').textContent = `Lv.${currentLvl.level} ${currentLvl.name}`;
+  document.getElementById('profile-xp').textContent = state.xp;
+  document.getElementById('profile-lessons').textContent = Object.keys(state.completedLessons).length;
+  document.getElementById('profile-accuracy').textContent = state.totalQuestions > 0
+    ? Math.round((state.correctQuestions / state.totalQuestions) * 100) + '%'
+    : '0%';
+
+  // 阶段进度
+  const progressContainer = document.getElementById('progress-overview');
+  progressContainer.innerHTML = '';
+  const stages = ['elementary', 'middle', 'high', 'university'];
+  const colors = ['#10b981', '#3b82f6', '#8b5cf6', '#ef4444'];
+
+  stages.forEach((sk, idx) => {
+    const stage = CURRICULUM[sk];
+    const prog = getStageProgress(sk);
+    const pct = prog.total > 0 ? (prog.completed / prog.total) * 100 : 0;
+
+    const item = document.createElement('div');
+    item.className = 'stage-progress-item';
+    item.innerHTML = `
+      <div class="stage-progress-header">
+        <span class="stage-name">${stage.name}</span>
+        <span class="stage-count">${prog.completed}/${prog.total} 关</span>
+      </div>
+      <div class="stage-progress-bar">
+        <div class="stage-progress-fill" style="width: ${pct}%; background: ${colors[idx]}"></div>
+      </div>
+    `;
+    progressContainer.appendChild(item);
+  });
+
+  // 成就
+  const achContainer = document.getElementById('achievements-grid');
+  achContainer.innerHTML = '';
+  ACHIEVEMENTS.forEach(ach => {
+    const unlocked = isAchievementUnlocked(ach.id);
+    const item = document.createElement('div');
+    item.className = 'achievement-item ' + (unlocked ? 'unlocked' : 'locked');
+    item.innerHTML = `
+      <div class="achievement-icon">${ach.icon}</div>
+      <div class="achievement-name">${ach.name}</div>
+    `;
+    item.title = ach.desc;
+    achContainer.appendChild(item);
+  });
+}
+
+function resetProgress() {
+  if (confirm('确定要重置所有学习进度吗？此操作不可恢复！')) {
+    localStorage.removeItem(STORAGE_KEY);
+    state = {
+      xp: 0, hearts: 5, maxHearts: 5,
+      completedLessons: {}, checkinDates: [], streak: 0,
+      totalQuestions: 0, correctQuestions: 0, currentStage: 'elementary'
+    };
+    showToast('进度已重置');
+    navigate('home');
+  }
+}
+
+// ============================================================
+// 工具函数
+// ============================================================
+function showToast(msg) {
+  const toast = document.getElementById('toast');
+  toast.textContent = msg;
+  toast.classList.add('show');
+  setTimeout(() => toast.classList.remove('show'), 2500);
+}
+
+// 爱心恢复（每30分钟恢复1颗）
+function recoverHearts() {
+  const now = Date.now();
+  const lastRecover = parseInt(localStorage.getItem('math_quest_last_recover') || '0');
+  const recoverInterval = 30 * 60 * 1000; // 30分钟
+
+  if (state.hearts < state.maxHearts && now - lastRecover >= recoverInterval) {
+    state.hearts++;
+    localStorage.setItem('math_quest_last_recover', String(now));
+    saveState();
+  }
+}
+
+// ============================================================
+// 初始化
+// ============================================================
+loadState();
+recoverHearts();
+renderHome();
+</script>
+</body>
+</html>

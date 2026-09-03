@@ -1,0 +1,13 @@
+<resources>
+    <style name="Theme.MathQuest" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <item name="colorPrimary">#1A2744</item>
+        <item name="colorPrimaryVariant">#0F172A</item>
+        <item name="colorOnPrimary">#FFFFFF</item>
+        <item name="colorSecondary">#F59E0B</item>
+        <item name="colorSecondaryVariant">#D97706</item>
+        <item name="colorOnSecondary">#1A2744</item>
+        <item name="android:statusBarColor">#1A2744</item>
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:windowBackground">#F8F6F1</item>
+    </style>
+</resources>

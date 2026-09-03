@@ -1,0 +1,18 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- 圆形背景 -->
+    <path
+        android:fillColor="#1A2744"
+        android:pathData="M54,54m-54,0a54,54 0,1 1,108 0a54,54 0,1 1,-108 0" />
+    <!-- 装饰圆环 -->
+    <path
+        android:fillColor="#2D3F66"
+        android:pathData="M54,30m-20,0a20,20 0,1 1,40 0a20,20 0,1 1,-40 0" />
+    <!-- π符号 -->
+    <path
+        android:fillColor="#F59E0B"
+        android:pathData="M38,46 L38,72 L43,72 L43,53 L50,68 L58,68 L65,53 L65,72 L70,72 L70,46 L38,46 Z M45,50 L63,50 L58,63 L50,63 L45,50 Z" />
+</vector>
